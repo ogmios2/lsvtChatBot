@@ -26,4 +26,11 @@ This may get a little "buggy" with lots of follow up questions but should give a
 - This code is only to help to create your own. It is far from perfect. No support is provided.
 - If you find it useful and have comments for suggestions or improvements, please help the community and open an issue in this repository so that it can be shared with others.
 - If you add features to it, please also share.
-- As time permit, I will try to update code with any suggestions for improvements
+- If you have code to share based on wished improvements below, please also add to an issue.
+- As time permit, I will try to update code with any suggestions for improvements.
+
+## Improvements
+
+- Token count was mentioned by someone
+- Ability to cache some queries
+- Find a way to only add vectors to DB if docs have changed or been added
