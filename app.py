@@ -23,10 +23,10 @@ pinecone.api_key = os.getenv("PINECONE_API_KEY")
 _template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 Chat History:
 {chat_history}
-(You do not need to use these pieces of information if not relevant)
 Follow Up Input: {question}
 Standalone question:"""
 CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(_template)
+
 template = """Based on the context provided, provide an answer to the best of your knowledge.
 Use your skills to determine what kind of context is provided and tailor your response accordingly. 
 When providing an answer, choose the tone of voice and humor of Zapp Brannigan from Futurama. Also, use html bullet list format when needed.
@@ -41,7 +41,7 @@ QA_PROMPT = PromptTemplate(template=template, input_variables=["question", "cont
 pinecone.init(
     environment="us-central1-gcp"
 )
-index_name = "langchain-demo1"
+index_name = "support-kb"
 
 # Replace kb_db_store initialization with Pinecone.from_existing_index method
 embeddings = OpenAIEmbeddings()
@@ -82,22 +82,50 @@ def get_answer(query):
     
     return answer
 
-# Local Interface
-examples = [
-    ["what was one of the first things the president do?"],
-    ["why did he do it?"]
-]
+# Gradio Interface
+def user(user_message, history):
+    return "", history + [[user_message, None]]
 
-# Define the input and output components for the Gradio interface
-input_query = gr.inputs.Textbox(lines=2, label="Enter a question:")
-output_answer = gr.outputs.HTML(label="Answer:")
+def bot(history):
+    query = history[-1][0]
+    result = get_answer(query)
+    history[-1][1] = result
+    return history
 
-# Launch the Gradio interface with the function and components
-demo = gr.Interface(fn=get_answer, 
-                    inputs=input_query, 
-                    outputs=output_answer, 
-                    title="Support Site Chat Bot", 
-                    allow_flagging="never",
-                    examples=examples
-                    )
+# Launch the Gradio interface with the chatbot components and functions
+with gr.Blocks() as demo:
+    chatbot = gr.Chatbot()
+
+    with gr.Row():
+        msg = gr.Textbox(
+            label="What's your question?",
+            placeholder="What's the answer to life, the universe, and everything?",
+            lines=2,
+        )
+        submit = gr.Button(value="Submit", variant="primary").style(full_width=False)
+        clear = gr.Button("Clear", style="secondary").style(full_width=False)
+
+    gr.Examples(
+        examples = [
+            ["How do I create a new user?"],
+            ["what's new in the past month?"],
+            ["what was released in October?"],
+            ["how do I add files to the media library?"],
+            ["what is a postable?"],
+            ["what formats and resolutions do you support in the media library?"],
+            ["how do I configure a certification?"]
+        ],
+        inputs=msg,
+    )
+
+    submit.click(user, [msg, chatbot], [msg, chatbot], queue=False).then(
+        bot, chatbot, chatbot
+    )
+    clear.click(lambda: None, None, chatbot, queue=False)
+
+    with gr.Row():
+        msg
+        submit
+        clear
+
 demo.launch()

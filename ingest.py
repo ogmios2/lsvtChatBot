@@ -20,7 +20,7 @@ Pinecone Setup
 pinecone.init(
     environment="us-central1-gcp"  # next to api key in console
 )
-index_name = "langchain-demo1"
+index_name = "support-kb"
 """
 END Pinecone Setup
 """
