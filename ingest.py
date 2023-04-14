@@ -1,4 +1,5 @@
 import pinecone
+import os
 
 from langchain.vectorstores import Pinecone
 from langchain.document_loaders import UnstructuredURLLoader
